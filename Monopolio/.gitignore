@@ -1,0 +1,26 @@
+obj/
+*.obj
+
+bin/
+
+*.dll
+*.exe
+*.pdb
+.vs/
+
+#user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+#user-specific files(MonoDevelop/Xamarin Studio)
+*.userprefs
+
+## Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
