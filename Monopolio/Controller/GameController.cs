@@ -41,7 +41,7 @@ public class GameController
         // Evitar nomes duplicados
         foreach (var p in players)
         {
-            if (p.Name == nome)
+            if (p.Nome == nome)
             {
                 ConsoleView.ShowError($"Já existe um jogador com o nome '{nome}'.");
                 return null;

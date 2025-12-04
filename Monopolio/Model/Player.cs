@@ -2,22 +2,22 @@ using System;
 
 public class Player
 {
-    public string Name { get; set; }
-    public int Position { get; set; }
-    public int Money { get; private set; }
+    public string Nome { get; set; }
+    public int Posição { get; set; }
+    public int Dinheiro { get; private set; }
     public bool IsBankrupt { get; private set; }
 
-    public Player(string name)
+    public Player(string nome)
     {
-        Name = name;
-        Position = 0;
-        Money = 1200; // Initial money
+        Nome = nome;
+        Posição = 0;
+        Dinheiro = 1200; // Initial money
         IsBankrupt = false;
     }
 
     public void Move(int spaces)
     {
-        Position = (Position + spaces) % 49; // Total de 49 espaços no tabuleiro
+        Posição = (Posição + spaces) % 49; // Total de 49 espaços no tabuleiro
     }
     public bool AdjustBalance(int amount)
     {
@@ -26,9 +26,9 @@ public class Player
             return false;
         }
 
-        Money += amount;
+        Dinheiro += amount;
 
-        if (Money < 0)
+        if (Dinheiro < 0)
         {
             IsBankrupt = true;
             return false;

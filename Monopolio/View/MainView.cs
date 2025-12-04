@@ -7,7 +7,7 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome> (registar jogador), LJ (listar jogadores), SB (mostrar tabuleiro), Q (sair)");
+        Console.WriteLine("Comandos: RJ <nome> (Registar jogador), LJ (Listar jogadores), MB (Mostrar tabuleiro), S (Sair)");
         while (true)
         {
             Console.Write("> ");
@@ -23,7 +23,7 @@ public static class MainView
                 var player = controller.registarJogador(name);
                 if (player != null)
                 {
-                    Console.WriteLine($"Jogador '{player.Name}' registado com sucesso.");
+                    Console.WriteLine($"Jogador '{player.Nome}' registado com sucesso.");
                 }
                 else
                 {
@@ -43,17 +43,17 @@ public static class MainView
                     foreach (var p in players)
                     {
                         string state = (p.IsBankrupt ? "Falido" : "Ativo");
-                        Console.WriteLine($"[{state}] Jogador {i}: {p.Name} - Dinheiro: {p.Money}");
+                        Console.WriteLine($"[{state}] Jogador {i}: {p.Nome} - Dinheiro: {p.Dinheiro}");
                         i++;
                     }
                 }
             }
-            else if (operation == "SB" || operation == "BOARD")
+            else if (operation == "MB" || operation == "BOARD")
             {
                 var board = new Board();
                 board.PrintBoard();
             }
-            else if (operation == "Q" || operation == "QUIT")
+            else if (operation == "S" || operation == "QUIT")
             {
                 Console.WriteLine("A sair...");
                 break;
