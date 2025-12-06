@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net.NetworkInformation;
 
 public static class MainView
 {
@@ -7,11 +8,11 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome> (Registar jogador), LJ (Listar jogadores), MB (Mostrar tabuleiro), S (Sair)");
+        Console.WriteLine("Comandos: RJ <nome> (Registar jogador), LJ (Listar jogadores), MB (Mostrar tabuleiro), IJ (Iniciar jogo), S (Sair)");
         while (true)
         {
             Console.Write("> ");
-            string line = Console.ReadLine();
+            string? line = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(line)) continue;
 
             string[] tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -23,7 +24,7 @@ public static class MainView
                 var player = controller.registarJogador(name);
                 if (player != null)
                 {
-                    Console.WriteLine($"Jogador '{player.Nome}' registado com sucesso.");
+                    Console.WriteLine($"Jogador '{player.Name}' registado com sucesso.");
                 }
                 else
                 {
@@ -43,7 +44,7 @@ public static class MainView
                     foreach (var p in players)
                     {
                         string state = (p.IsBankrupt ? "Falido" : "Ativo");
-                        Console.WriteLine($"[{state}] Jogador {i}: {p.Nome} - Dinheiro: {p.Dinheiro}");
+                        Console.WriteLine($"[{state}] Jogador {i}: {p.Name} - Dinheiro: {p.Dinheiro}");
                         i++;
                     }
                 }
@@ -52,6 +53,10 @@ public static class MainView
             {
                 var board = new Board();
                 board.PrintBoard();
+            }
+            else if(operation == "IJ")
+            {
+                controller.StartGame();
             }
             else if (operation == "S" || operation == "QUIT")
             {

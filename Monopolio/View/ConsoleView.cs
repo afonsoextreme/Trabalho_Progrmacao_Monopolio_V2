@@ -33,7 +33,7 @@ public static class ConsoleView
         Console.WriteLine("Jogadores registados:");
         foreach (var p in players)
         {
-            Console.WriteLine($"- {p.Name} (Dinheiro: {p.Money})");
+            Console.WriteLine($"- {p.Name} (Dinheiro: {p.Dinheiro})");
         }
     }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 
 public class GameController
 {
@@ -7,6 +8,7 @@ public class GameController
     private List<Player> players;
     private const int MaxPlayers = 5;
     private Board board;
+    private Game game;
 
     // Regista um jogador com o nome fornecido e retorna o objecto Player criado.
     // Se já existir um jogador com o mesmo nome, devolve null.
@@ -15,8 +17,9 @@ public class GameController
     {
         players = new List<Player>();
         board = new Board();
+        game = new Game();
     }
-    public Player registarJogador(string nome)
+    public Player? registarJogador(string nome)
     {
         // Não permitir mais do que MaxPlayers
         if (players.Count >= MaxPlayers)
@@ -41,7 +44,7 @@ public class GameController
         // Evitar nomes duplicados
         foreach (var p in players)
         {
-            if (p.Nome == nome)
+            if (p.Name == nome)
             {
                 ConsoleView.ShowError($"Já existe um jogador com o nome '{nome}'.");
                 return null;
@@ -64,5 +67,23 @@ public class GameController
     public void PrintBoard()
     {
         board.PrintBoard();
+    }
+
+    public void StartGame()
+    {
+        // Lógica para iniciar o jogo
+        if(game.JogoemCurso)
+        {
+            Console.WriteLine("O Jogo já está em curso.");
+            return;
+        }
+        if(players.Count < 2)
+        {
+            Console.WriteLine("É necessário pelo menos 2 jogadores para iniciar o jogo.");
+            return;
+        }
+        game.JogoemCurso = true;
+        ConsoleView.ShowInfo("Jogo iniciado!");
+        
     }
 }
