@@ -23,6 +23,7 @@ public class GameController
         board = new Board();
     }
 
+    // ===== REGISTO =====
     public Player registarJogador(string nome)
     {
         if (players.Count >= MaxPlayers)
@@ -37,13 +38,10 @@ public class GameController
             return null;
         }
 
-        foreach (var p in players)
+        if (players.Any(p => p.Name == nome))
         {
-            if (p.Name == nome)
-            {
-                Console.WriteLine($"Já existe um jogador com o nome '{nome}'.");
-                return null;
-            }
+            Console.WriteLine($"Já existe um jogador com o nome '{nome}'.");
+            return null;
         }
 
         var player = new Player(nome);
@@ -73,103 +71,50 @@ public class GameController
         Console.WriteLine($"Jogo iniciado. Turno de {JogadorAtual.Name}.");
     }
 
-    // ===== LANÇAR DADOS (LD) =====
+    // ===== LANÇAR DADOS (LD - aleatório) =====
     public void LancarDados(string nomeJogador)
     {
-        if (!jogoIniciado)
-        {
-            Console.WriteLine("Não existe um jogo em curso.");
-            return;
-        }
+        if (!PrepararTurnoPara(nomeJogador)) return;
 
-        var jogador = players.FirstOrDefault(p => p.Name == nomeJogador);
-        if (jogador == null)
-        {
-            Console.WriteLine("Jogador não participa no jogo em curso.");
-            return;
-        }
+        var jogador = JogadorAtual;
 
-        if (players[indiceJogadorAtual] != jogador)
-        {
-            Console.WriteLine("Não é o turno do jogador.");
-            return;
-        }
-
-        if (jogador.LancouDadosEsteTurno)
-        {
-            Console.WriteLine("O jogador já lançou os dados neste turno.");
-            return;
-        }
+        int d1 = random.Next(1, 7);
+        int d2 = random.Next(1, 7);
 
         if (jogador.EstaPreso)
         {
-            Console.WriteLine("O jogador está preso.");
-            return;
+            if (d1 == d2)
+            {
+                jogador.EstaPreso = false;
+                jogador.TurnosNaPrisao = 0;
+                Console.WriteLine($"{jogador.Name} saiu da prisão com duplos.");
+            }
+            else
+            {
+                jogador.TurnosNaPrisao++;
+                Console.WriteLine($"{jogador.Name} continua preso.");
+                if (jogador.TurnosNaPrisao >= 3)
+                {
+                    jogador.EstaPreso = false;
+                    jogador.TurnosNaPrisao = 0;
+                    Console.WriteLine($"{jogador.Name} saiu da prisão após 3 turnos.");
+                }
+                jogador.LancouDadosEsteTurno = true;
+                return;
+            }
         }
 
-        int pos = jogador.Position;
-        int roll1 = random.Next(1, 7);
-        int roll2 = random.Next(1, 7);
-        int steps = roll1 + roll2;
-        int novaPosicao = (pos + steps) % board.Spaces.Count;
-
-        jogador.Position = novaPosicao;
-        jogador.LancouDadosEsteTurno = true;
-
-        Space espacoAtual = board.Spaces[novaPosicao];
-        Console.WriteLine($"{jogador.Name} lançou {roll1} e {roll2} e moveu-se para {espacoAtual.Name}");
-
-        if (espacoAtual.Dono != null && espacoAtual.Dono != jogador)
-        {
-            aluguerPendente = CalcularAluguer(espacoAtual);
-            donoAluguerPendente = espacoAtual.Dono;
-            Console.WriteLine($"O espaço pertence a {donoAluguerPendente.Name}. Deve pagar aluguer de {aluguerPendente}.");
-        }
-        else
-        {
-            aluguerPendente = 0;
-            donoAluguerPendente = null;
-        }
-
-        cartaObrigatoria = espacoAtual.Name.Equals("Chance", StringComparison.OrdinalIgnoreCase)
-                           || espacoAtual.Name.Equals("Community", StringComparison.OrdinalIgnoreCase);
-        if (cartaObrigatoria)
-        {
-            Console.WriteLine("Jogador tem de tirar uma carta (TC).");
-        }
+        int steps = d1 + d2;
+        int novaPosicao = (jogador.Position + steps) % board.Spaces.Count;
+        MoverPara(jogador, novaPosicao, d1, d2);
     }
+
+    // ===== LANÇAR DADOS (LD X Y) =====
     public void LancarDados(string nomeJogador, int x, int y)
     {
-        if (!jogoIniciado)
-        {
-            Console.WriteLine("Não existe um jogo em curso.");
-            return;
-        }
+        if (!PrepararTurnoPara(nomeJogador)) return;
 
-        var jogador = players.FirstOrDefault(p => p.Name == nomeJogador);
-        if (jogador == null)
-        {
-            Console.WriteLine("Jogador não participa no jogo em curso.");
-            return;
-        }
-
-        if (players[indiceJogadorAtual] != jogador)
-        {
-            Console.WriteLine("Não é o turno do jogador.");
-            return;
-        }
-
-        if (jogador.LancouDadosEsteTurno)
-        {
-            Console.WriteLine("O jogador já lançou os dados neste turno.");
-            return;
-        }
-
-        if (jogador.EstaPreso)
-        {
-            Console.WriteLine("O jogador está preso.");
-            return;
-        }
+        var jogador = JogadorAtual;
 
         int pos = jogador.Position;
         int linha = pos / 7;
@@ -177,14 +122,22 @@ public class GameController
 
         int novaLinha = Math.Max(0, Math.Min(6, linha + y));
         int novaColuna = Math.Max(0, Math.Min(6, coluna + x));
-
         int novaPosicao = novaLinha * 7 + novaColuna;
 
+        MoverPara(jogador, novaPosicao, null, null);
+    }
+
+    private void MoverPara(Player jogador, int novaPosicao, int? d1, int? d2)
+    {
         jogador.Position = novaPosicao;
         jogador.LancouDadosEsteTurno = true;
 
         Space espacoAtual = board.Spaces[novaPosicao];
-        Console.WriteLine($"{jogador.Name} moveu-se para {espacoAtual.Name}");
+
+        if (d1.HasValue && d2.HasValue)
+            Console.WriteLine($"{jogador.Name} lançou {d1} e {d2} e moveu-se para {espacoAtual.Name}");
+        else
+            Console.WriteLine($"{jogador.Name} moveu-se para {espacoAtual.Name}");
 
         if (espacoAtual.Dono != null && espacoAtual.Dono != jogador)
         {
@@ -200,33 +153,17 @@ public class GameController
 
         cartaObrigatoria = espacoAtual.Name.Equals("Chance", StringComparison.OrdinalIgnoreCase)
                            || espacoAtual.Name.Equals("Community", StringComparison.OrdinalIgnoreCase);
+
         if (cartaObrigatoria)
-        {
             Console.WriteLine("Jogador tem de tirar uma carta (TC).");
-        }
     }
 
     // ===== COMPRAR ESPAÇO (CE) =====
     public void ComprarEspaco(string nomeJogador)
     {
-        if (!jogoIniciado)
-        {
-            Console.WriteLine("Não existe um jogo em curso.");
-            return;
-        }
+        if (!PrepararTurnoPara(nomeJogador)) return;
 
-        var jogador = players.FirstOrDefault(p => p.Name == nomeJogador);
-        if (jogador == null)
-        {
-            Console.WriteLine("Jogador não participa no jogo em curso.");
-            return;
-        }
-
-        if (players[indiceJogadorAtual] != jogador)
-        {
-            Console.WriteLine("Não é o turno do jogador.");
-            return;
-        }
+        var jogador = JogadorAtual;
 
         if (!jogador.LancouDadosEsteTurno)
         {
@@ -234,34 +171,30 @@ public class GameController
             return;
         }
 
-        int pos = jogador.Position;
-        Space espacoAtual = board.Spaces[pos];
+        var espaco = board.Spaces[jogador.Position];
 
-        if (!espacoAtual.PodeSerComprado)
+        if (!espaco.PodeSerComprado)
         {
             Console.WriteLine("Este espaço não está para venda.");
             return;
         }
 
-        if (espacoAtual.Dono != null)
+        if (espaco.Dono != null)
         {
             Console.WriteLine("O espaço já se encontra comprado.");
             return;
         }
 
-        if (jogador.Money < espacoAtual.Preco)
+        if (jogador.Money < espaco.Preco)
         {
             Console.WriteLine("O jogador não tem dinheiro suficiente para adquirir o espaço.");
             return;
         }
 
-        jogador.Money -= espacoAtual.Preco;
-        espacoAtual.Dono = jogador;
+        jogador.Money -= espaco.Preco;
+        espaco.Dono = jogador;
 
         Console.WriteLine("Espaço comprado.");
-
-        // Passa turno depois de comprar
-        TerminarTurno();
     }
 
     // ===== PAGAR ALUGUER (PA) =====
@@ -274,22 +207,26 @@ public class GameController
         }
 
         var jogador = JogadorAtual;
+
         if (aluguerPendente <= 0 || donoAluguerPendente == null)
         {
             Console.WriteLine("Nenhum aluguer pendente.");
             return;
         }
 
-        bool pagou = jogador.Pay(aluguerPendente);
-        if (!pagou)
+        if (jogador.Money >= aluguerPendente)
         {
-            Console.WriteLine($"{jogador.Name} não tem fundos suficientes e fica falido.");
+            jogador.Pay(aluguerPendente);
             donoAluguerPendente.Receive(aluguerPendente);
+            Console.WriteLine("Aluguer pago.");
         }
         else
         {
-            donoAluguerPendente.Receive(aluguerPendente);
-            Console.WriteLine("Aluguer pago.");
+            int tudo = jogador.Money;
+            jogador.Pay(tudo);
+            donoAluguerPendente.Receive(tudo);
+            jogador.DeclareBankrupt();
+            Console.WriteLine($"{jogador.Name} ficou falido.");
         }
 
         aluguerPendente = 0;
@@ -311,8 +248,7 @@ public class GameController
             return;
         }
 
-        var jogador = JogadorAtual;
-        AplicarEfeitoCarta(jogador);
+        AplicarEfeitoCarta(JogadorAtual);
         cartaObrigatoria = false;
     }
 
@@ -326,6 +262,7 @@ public class GameController
         }
 
         var jogador = JogadorAtual;
+
         if (!jogador.LancouDadosEsteTurno)
         {
             Console.WriteLine("É obrigatório lançar os dados (LD) antes de terminar o turno.");
@@ -351,6 +288,37 @@ public class GameController
     public Board GetBoard() => board;
 
     // ===== Helpers =====
+
+    private bool PrepararTurnoPara(string nomeJogador)
+    {
+        if (!jogoIniciado)
+        {
+            Console.WriteLine("Não existe um jogo em curso.");
+            return false;
+        }
+
+        var jogador = players.FirstOrDefault(p => p.Name == nomeJogador);
+        if (jogador == null)
+        {
+            Console.WriteLine("Jogador não participa no jogo em curso.");
+            return false;
+        }
+
+        if (JogadorAtual != jogador)
+        {
+            Console.WriteLine("Não é o turno do jogador.");
+            return false;
+        }
+
+        if (jogador.LancouDadosEsteTurno)
+        {
+            Console.WriteLine("O jogador já lançou os dados neste turno.");
+            return false;
+        }
+
+        return true;
+    }
+
     private void ReiniciarEstadoTurno()
     {
         if (players.Count == 0) return;
@@ -364,7 +332,6 @@ public class GameController
 
     private int CalcularAluguer(Space espaco)
     {
-        // Aluguer simples: 20% do preço de compra (mínimo 10).
         return Math.Max(10, (int)(espaco.Preco * 0.2));
     }
 
@@ -374,8 +341,7 @@ public class GameController
         if (vivos <= 1)
         {
             var vencedor = players.FirstOrDefault(p => !p.IsBankrupt);
-            string nome = vencedor != null ? vencedor.Name : "nenhum";
-            Console.WriteLine($"Jogo terminou. Vencedor: {nome}");
+            Console.WriteLine($"Jogo terminou. Vencedor: {(vencedor != null ? vencedor.Name : "nenhum")}");
             jogoIniciado = false;
             return;
         }
@@ -385,7 +351,7 @@ public class GameController
         {
             indiceJogadorAtual = (indiceJogadorAtual + 1) % players.Count;
             tentativas--;
-        } while (players[indiceJogadorAtual].IsBankrupt && tentativas >= 0);
+        } while (players[indiceJogadorAtual].IsBankrupt && tentativas > 0);
 
         ReiniciarEstadoTurno();
         Console.WriteLine($"Agora é a vez de {JogadorAtual.Name}.");
@@ -394,6 +360,7 @@ public class GameController
     private void AplicarEfeitoCarta(Player jogador)
     {
         int efeito = random.Next(3);
+
         switch (efeito)
         {
             case 0:
@@ -401,10 +368,10 @@ public class GameController
                 Console.WriteLine($"{jogador.Name} recebe 150 da banca.");
                 break;
             case 1:
-                bool pagou = jogador.Pay(100);
-                if (!pagou)
+                if (!jogador.Pay(100))
                 {
-                    Console.WriteLine($"{jogador.Name} ficou falido ao pagar 100 à banca.");
+                    jogador.DeclareBankrupt();
+                    Console.WriteLine($"{jogador.Name} ficou falido ao pagar 100.");
                 }
                 else
                 {
@@ -412,7 +379,7 @@ public class GameController
                 }
                 break;
             default:
-                jogador.Position = 24; // voltar ao Start
+                jogador.Position = 24;
                 Console.WriteLine($"{jogador.Name} volta ao Start.");
                 break;
         }

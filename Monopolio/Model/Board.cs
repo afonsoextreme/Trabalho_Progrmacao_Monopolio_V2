@@ -19,8 +19,7 @@ public class Board
         {"Yellow1", 140}, {"Yellow2", 140}, {"Yellow3", 170},
         {"Violet1", 150}, {"Violet2", 130},
         {"Train1", 150}, {"Train2", 150}, {"Train3", 150}, {"Train4", 150},
-        {"Electric Company", 120}, {"Water Works", 120},
-        {"Lux Tax", 80}
+        {"Electric Company", 120}, {"Water Works", 120}
     };
 
     public Board()
@@ -43,9 +42,15 @@ public class Board
             if (PrecosEspacos.ContainsKey(name))
             {
                 space.Preco = PrecosEspacos[name];
-                space.PodeSerComprado = name != "Lux Tax";
+                space.PodeSerComprado = true;
             }
             else
+            {
+                space.PodeSerComprado = false;
+            }
+
+            // Lux Tax nunca é comprável
+            if (name == "Lux Tax")
             {
                 space.PodeSerComprado = false;
             }
