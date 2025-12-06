@@ -1,68 +1,154 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class GameController
 {
-    // Lista de jogadores registados no jogo
     private List<Player> players;
     private const int MaxPlayers = 5;
     private Board board;
 
-    // Regista um jogador com o nome fornecido e retorna o objecto Player criado.
-    // Se já existir um jogador com o mesmo nome, devolve null.
+    private bool jogoIniciado = false;
+    private int indiceJogadorAtual = 0;
 
     public GameController()
     {
         players = new List<Player>();
         board = new Board();
     }
+
     public Player registarJogador(string nome)
     {
-        // Não permitir mais do que MaxPlayers
         if (players.Count >= MaxPlayers)
         {
-            ConsoleView.ShowError($"Número máximo de jogadores ({MaxPlayers}) atingido.");
+            Console.WriteLine($"Número máximo de jogadores ({MaxPlayers}) atingido.");
             return null;
         }
 
-        // Se o nome não for passado, pedir ao utilizador (usa ConsoleView)
         if (string.IsNullOrWhiteSpace(nome))
         {
-            nome = ConsoleView.Prompt("Introduza o nome do jogador: ");
-        }
-
-        // Validação final: nome ainda inválido?
-        if (string.IsNullOrWhiteSpace(nome))
-        {
-            ConsoleView.ShowError("Nome inválido.");
+            Console.WriteLine("Nome inválido.");
             return null;
         }
 
-        // Evitar nomes duplicados
         foreach (var p in players)
         {
             if (p.Name == nome)
             {
-                ConsoleView.ShowError($"Já existe um jogador com o nome '{nome}'.");
+                Console.WriteLine($"Já existe um jogador com o nome '{nome}'.");
                 return null;
             }
         }
 
         var player = new Player(nome);
         players.Add(player);
-        ConsoleView.ShowInfo($"Jogador '{nome}' registado com sucesso.");
+        Console.WriteLine($"Jogador '{nome}' registado com sucesso.");
         return player;
     }
 
-    // Permite obter a lista (somente leitura) de jogadores registados
-    public IReadOnlyList<Player> GetPlayers() => players.AsReadOnly();
-
-    // Aceder ao tabuleiro do jogo (instância única)
-    public Board GetBoard() => board;
-
-    // Imprime o tabuleiro actual
-    public void PrintBoard()
+    // ===== INICIAR JOGO (IJ) =====
+    public void IniciarJogo()
     {
-        board.PrintBoard();
+        if (players.Count < 2)
+        {
+            Console.WriteLine("Jogadores insuficientes para iniciar o jogo.");
+            return;
+        }
+
+        jogoIniciado = true;
+        indiceJogadorAtual = 0;
+        Console.WriteLine("Jogo iniciado com sucesso.");
     }
+
+    // ===== LANÇAR DADOS (LD) =====
+    public void LancarDados(string nomeJogador, int x, int y)
+    {
+        if (!jogoIniciado)
+        {
+            Console.WriteLine("Não existe um jogo em curso.");
+            return;
+        }
+
+        var jogador = players.FirstOrDefault(p => p.Name == nomeJogador);
+        if (jogador == null)
+        {
+            Console.WriteLine("Jogador não participa no jogo em curso.");
+            return;
+        }
+
+        if (players[indiceJogadorAtual] != jogador)
+        {
+            Console.WriteLine("Não é o turno do jogador.");
+            return;
+        }
+
+        if (jogador.EstaPreso)
+        {
+            Console.WriteLine("O jogador está preso.");
+            return;
+        }
+
+        int pos = jogador.Position;
+        int linha = pos / 7;
+        int coluna = pos % 7;
+
+        int novaLinha = Math.Max(0, Math.Min(6, linha + y));
+        int novaColuna = Math.Max(0, Math.Min(6, coluna + x));
+
+        int novaPosicao = novaLinha * 7 + novaColuna;
+
+        jogador.Position = novaPosicao;
+        jogador.LancouDadosEsteTurno = true;
+
+        Console.WriteLine($"{jogador.Name} moveu-se para {board.Spaces[novaPosicao].Name}");
+    }
+
+    // ===== COMPRAR ESPAÇO (CE) =====
+    public void ComprarEspaco(string nomeJogador)
+    {
+        if (!jogoIniciado)
+        {
+            Console.WriteLine("Não existe um jogo em curso.");
+            return;
+        }
+
+        var jogador = players.FirstOrDefault(p => p.Name == nomeJogador);
+        if (jogador == null)
+        {
+            Console.WriteLine("Jogador não participa no jogo em curso.");
+            return;
+        }
+
+        int pos = jogador.Position;
+        Space espacoAtual = board.Spaces[pos];
+
+        if (!espacoAtual.PodeSerComprado)
+        {
+            Console.WriteLine("Este espaço não está para venda.");
+            return;
+        }
+
+        if (espacoAtual.Dono != null)
+        {
+            Console.WriteLine("O espaço já se encontra comprado.");
+            return;
+        }
+
+        if (jogador.Money < espacoAtual.Preco)
+        {
+            Console.WriteLine("O jogador não tem dinheiro suficiente para adquirir o espaço.");
+            return;
+        }
+
+        jogador.Money -= espacoAtual.Preco;
+        espacoAtual.Dono = jogador;
+
+        Console.WriteLine("Espaço comprado.");
+
+        // Passa turno depois de comprar
+        indiceJogadorAtual = (indiceJogadorAtual + 1) % players.Count;
+    }
+
+    public IReadOnlyList<Player> GetPlayers() => players.AsReadOnly();
+    public Board GetBoard() => board;
 }

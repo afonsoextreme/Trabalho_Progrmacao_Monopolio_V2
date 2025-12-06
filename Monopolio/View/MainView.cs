@@ -7,7 +7,8 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome> (registar jogador), LJ (listar jogadores), SB (mostrar tabuleiro), Q (sair)");
+        Console.WriteLine("Comandos: RJ <nome>, IJ, LD <nome> <x> <y>, CE <nome>, LJ, SB, Q");
+
         while (true)
         {
             Console.Write("> ");
@@ -19,15 +20,41 @@ public static class MainView
 
             if (operation == "RJ")
             {
-                string name = tokens.Length > 1 ? string.Join(' ', tokens.Skip(1)) : string.Empty;
-                var player = controller.registarJogador(name);
-                if (player != null)
+                string name = tokens.Length > 1
+                    ? string.Join(' ', tokens.Skip(1))
+                    : string.Empty;
+
+                controller.registarJogador(name);
+            }
+            else if (operation == "IJ")
+            {
+                controller.IniciarJogo();
+            }
+            else if (operation == "LD")
+            {
+                if (tokens.Length < 4)
                 {
-                    Console.WriteLine($"Jogador '{player.Name}' registado com sucesso.");
+                    Console.WriteLine("Uso correto: LD Nome X Y");
                 }
                 else
                 {
-                    Console.WriteLine("Registo falhou.");
+                    string nome = tokens[1];
+                    int x = int.Parse(tokens[2]);
+                    int y = int.Parse(tokens[3]);
+
+                    controller.LancarDados(nome, x, y);
+                }
+            }
+            else if (operation == "CE")
+            {
+                if (tokens.Length < 2)
+                {
+                    Console.WriteLine("Uso correto: CE Nome");
+                }
+                else
+                {
+                    string nome = string.Join(' ', tokens.Skip(1));
+                    controller.ComprarEspaco(nome);
                 }
             }
             else if (operation == "LJ")
@@ -42,7 +69,7 @@ public static class MainView
                     int i = 1;
                     foreach (var p in players)
                     {
-                        string state = (p.IsBankrupt ? "Falido" : "Ativo");
+                        string state = p.IsBankrupt ? "Falido" : "Ativo";
                         Console.WriteLine($"[{state}] Jogador {i}: {p.Name} - Dinheiro: {p.Money}");
                         i++;
                     }
@@ -50,8 +77,7 @@ public static class MainView
             }
             else if (operation == "SB" || operation == "BOARD")
             {
-                var board = new Board();
-                board.PrintBoard();
+                controller.GetBoard().PrintBoard();
             }
             else if (operation == "Q" || operation == "QUIT")
             {

@@ -1,30 +1,32 @@
-using System;
-
 public class Player
 {
     public string Name { get; set; }
     public int Position { get; set; }
-    public int Money { get; private set; }
+    public int Money { get; set; }
     public bool IsBankrupt { get; private set; }
+    public bool LancouDadosEsteTurno { get; set; }
+    public bool EstaPreso { get; set; }
+    public int TurnosNaPrisao { get; set; }
 
     public Player(string name)
     {
         Name = name;
-        Position = 0;
-        Money = 1200; // Initial money
+        Position = 24; // Start está no centro do tabuleiro (índice 24)
+        Money = 1200;
         IsBankrupt = false;
+        LancouDadosEsteTurno = false;
+        EstaPreso = false;
+        TurnosNaPrisao = 0;
     }
 
-    public void Move(int spaces)
+    public void Move(int novaPosicao)
     {
-        Position = (Position + spaces) % 49; // Total de 49 espaços no tabuleiro
+        Position = novaPosicao;
     }
+
     public bool AdjustBalance(int amount)
     {
-        if (IsBankrupt)
-        {
-            return false;
-        }
+        if (IsBankrupt) return false;
 
         Money += amount;
 
@@ -39,13 +41,11 @@ public class Player
 
     public bool Pay(int amount)
     {
-        if (amount < 0) throw new ArgumentException("Amount must be positive", nameof(amount));
         return AdjustBalance(-amount);
     }
 
     public bool Receive(int amount)
     {
-        if (amount < 0) throw new ArgumentException("Amount must be positive", nameof(amount));
         return AdjustBalance(amount);
     }
 
