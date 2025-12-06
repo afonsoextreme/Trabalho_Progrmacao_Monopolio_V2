@@ -7,7 +7,7 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome>, IJ, LD <nome> <x> <y>, CE <nome>, LJ, SB, Q");
+        Console.WriteLine("Comandos: RJ <nome>, IJ(Iniciar Jogo), LD <nome>, PA(Pagar Aluguer), TC(Tirar Carta), TT(Terminar Turno), CE <nome>, LJ(Listar Jogadores), SB(Mostrar Board), Q(Sair)");
 
         while (true)
         {
@@ -32,17 +32,14 @@ public static class MainView
             }
             else if (operation == "LD")
             {
-                if (tokens.Length < 4)
+                if (tokens.Length < 2)
                 {
-                    Console.WriteLine("Uso correto: LD Nome X Y");
+                    Console.WriteLine("Uso correto: LD Nome");
                 }
                 else
                 {
-                    string nome = tokens[1];
-                    int x = int.Parse(tokens[2]);
-                    int y = int.Parse(tokens[3]);
-
-                    controller.LancarDados(nome, x, y);
+                    string nome = string.Join(' ', tokens.Skip(1));
+                    controller.LancarDados(nome);
                 }
             }
             else if (operation == "CE")
@@ -56,6 +53,18 @@ public static class MainView
                     string nome = string.Join(' ', tokens.Skip(1));
                     controller.ComprarEspaco(nome);
                 }
+            }
+            else if (operation == "PA")
+            {
+                controller.PagarAluguer();
+            }
+            else if (operation == "TC")
+            {
+                controller.TirarCarta();
+            }
+            else if (operation == "TT")
+            {
+                controller.TerminarTurno();
             }
             else if (operation == "LJ")
             {
