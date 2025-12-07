@@ -7,7 +7,7 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome>, IJ, LD, PA, TC, TT, CE, LJ, MT, S");
+        Console.WriteLine("Comandos: RJ <nome>, IJ, LD, PA, TC, TT, CE, CC <num>, LJ, DJ, S");
 
         while (true)
         {
@@ -25,6 +25,7 @@ public static class MainView
                     : string.Empty;
 
                 controller.registarJogador(name);
+                Console.WriteLine("Comandos: RJ <nome>, IJ, LD, PA, TC, TT, CE, CC <num>, LJ, DJ, S");
             }
             else if (operation == "IJ")
             {
@@ -58,6 +59,17 @@ public static class MainView
             {
                 controller.PagarAluguer();
             }
+            else if (operation == "CC")
+            {
+                if (tokens.Length < 2 || !int.TryParse(tokens[1], out int nCasas))
+                {
+                    Console.WriteLine("Uso correto: CC <numero de casas>");
+                }
+                else
+                {
+                    controller.ComprarCasa(nCasas);
+                }
+            }
             else if (operation == "TC")
             {
                 controller.TirarCarta();
@@ -84,7 +96,7 @@ public static class MainView
                     }
                 }
             }
-            else if (operation == "SB" || operation == "BOARD")
+            else if (operation == "DJ" || operation == "BOARD")
             {
                 controller.GetBoard().PrintBoard();
             }

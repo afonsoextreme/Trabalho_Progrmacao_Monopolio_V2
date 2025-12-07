@@ -23,7 +23,7 @@ public class GameController
         board = new Board();
     }
 
-    // ===== REGISTO =====
+    // ===== REGISTOJOGADOR(RJ) =====
     public Player? registarJogador(string nome)
     {
         if (players.Count >= MaxPlayers)
@@ -298,6 +298,83 @@ public class GameController
         TerminarTurno();
     }
 
+    // ===== Comprar Casa (CC) =====
+    public void ComprarCasa(int numeroCasas)
+    {
+        if (!jogoIniciado)
+        {
+            Console.WriteLine("Não existe um jogo em curso.");
+            return;
+        }
+
+        var jogador = JogadorAtual;
+        if (jogador == null)
+        {
+            Console.WriteLine("Nenhum jogador ativo.");
+            return;
+        }
+
+        if (numeroCasas <= 0)
+        {
+            Console.WriteLine("Número de casas inválido.");
+            return;
+        }
+
+        int pos = jogador.Position;
+        var espaco = board.Spaces[pos];
+
+        if (!espaco.PodeSerComprado)
+        {
+            Console.WriteLine("Este espaço não permite construção de casas.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(espaco.Color))
+        {
+            Console.WriteLine("Não é possível construir casas neste tipo de espaço.");
+            return;
+        }
+
+        if (espaco.Dono != jogador)
+        {
+            Console.WriteLine("Só o dono do espaço pode comprar casas aqui.");
+            return;
+        }
+
+        if (!jogador.LancouDadosEsteTurno)
+        {
+            Console.WriteLine("É preciso lançar os dados antes de comprar casas.");
+            return;
+        }
+
+        var espacosMesmaCor = board.Spaces.Where(s => s.Color == espaco.Color && s.PodeSerComprado);
+        if (!espacosMesmaCor.Any() || !espacosMesmaCor.All(s => s.Dono == jogador))
+        {
+            Console.WriteLine("Para comprar casas, o jogador precisa ser dono de todos os espaços desta cor.");
+            return;
+        }
+
+        if (espaco.Casas >= espaco.MaxCasas)
+        {
+            Console.WriteLine("Limite de casas atingido neste espaço.");
+            return;
+        }
+
+        int casasPossiveis = Math.Min(numeroCasas, espaco.MaxCasas - espaco.Casas);
+        int custoPorCasa = (int)Math.Round(espaco.Preco * 0.6, MidpointRounding.AwayFromZero);
+        int custoTotal = casasPossiveis * custoPorCasa;
+
+        if (jogador.Money < custoTotal)
+        {
+            Console.WriteLine("Saldo insuficiente para comprar as casas.");
+            return;
+        }
+
+        jogador.Money -= custoTotal;
+        espaco.Casas += casasPossiveis;
+        Console.WriteLine($"Compradas {casasPossiveis} casa(s) em {espaco.Name}. Total de casas: {espaco.Casas}.");
+    }
+
     // ===== PAGAR ALUGUER (PA) =====
     public void PagarAluguer()
     {
@@ -425,8 +502,9 @@ public class GameController
 
     private int CalcularAluguer(Space espaco)
     {
-        // Aluguer simples: 20% do preço de compra (mínimo 10).
-        return Math.Max(10, (int)(espaco.Preco * 0.2));
+        int baseRent = Math.Max(10, (int)(espaco.Preco * 0.2));
+        int bonusCasas = espaco.Casas * (baseRent / 2); // cada casa aumenta 50% do aluguer base
+        return baseRent + bonusCasas;
     }
 
     private void AvancarParaProximoJogador()
