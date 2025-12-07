@@ -7,12 +7,12 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome>, IJ(Iniciar Jogo), LD <nome>, PA(Pagar Aluguer), TC(Tirar Carta), TT(Terminar Turno), CE <nome>, LJ(Listar Jogadores), SB(Mostrar Board), Q(Sair)");
+        Console.WriteLine("Comandos: RJ <nome>, IJ, LD, PA, TC, TT, CE, LJ, MT, S");
 
         while (true)
         {
             Console.Write("> ");
-            string line = Console.ReadLine();
+            string? line = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(line)) continue;
 
             string[] tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -32,9 +32,9 @@ public static class MainView
             }
             else if (operation == "LD")
             {
-                if (tokens.Length < 2)
+                if (tokens.Length == 1)
                 {
-                    Console.WriteLine("Uso correto: LD Nome");
+                    controller.LancarDados();
                 }
                 else
                 {
@@ -44,9 +44,9 @@ public static class MainView
             }
             else if (operation == "CE")
             {
-                if (tokens.Length < 2)
+                if (tokens.Length == 1)
                 {
-                    Console.WriteLine("Uso correto: CE Nome");
+                    controller.ComprarEspaco();
                 }
                 else
                 {
