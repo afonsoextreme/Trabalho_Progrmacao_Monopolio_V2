@@ -7,12 +7,20 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome>, IJ(Iniciar Jogo), LD <nome>, PA(Pagar Aluguer), TC(Tirar Carta), TT(Terminar Turno), CE <nome>, LJ(Listar Jogadores), SB(Mostrar Board), Q(Sair)");
-
         while (true)
         {
+            // Mostrar comandos consoante o estado do jogo
+            if (controller.IsGameStarted())
+            {
+                Console.WriteLine("Comandos: LD <nome>, CE <nome>, TT, S, Q");
+            }
+            else
+            {
+                Console.WriteLine("Comandos: RJ <nome>, IJ, S, LJ, SB, Q");
+            }
+
             Console.Write("> ");
-            string line = Console.ReadLine();
+            string line = Console.ReadLine() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(line)) continue;
 
             string[] tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -52,6 +60,57 @@ public static class MainView
                 {
                     string nome = string.Join(' ', tokens.Skip(1));
                     controller.ComprarEspaco(nome);
+                }
+            }
+            else if (operation == "S")
+            {
+                if (!controller.IsGameStarted())
+                {
+                    var players = controller.GetPlayers();
+                    if (players.Count == 0)
+                    {
+                        Console.WriteLine("Nenhum jogador registado.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Jogadores registados:");
+                        int i = 1;
+                        foreach (var p in players)
+                        {
+                            string state = p.IsBankrupt ? "Falido" : "Ativo";
+                            Console.WriteLine($"[{state}] Jogador {i}: {p.Name} - Dinheiro: {p.Money} - Pos: {p.Position}");
+                            i++;
+                        }
+                    }
+                }
+                else
+                {
+                    var cur = controller.GetCurrentPlayer();
+                    if (cur == null)
+                    {
+                        Console.WriteLine("Nenhum jogador ativo no jogo.");
+                    }
+                    else
+                    {
+                        var board = controller.GetBoard();
+                        string spaceName = board.GetSpaceAt(cur.Position).Name;
+                        Console.WriteLine($"Jogador atual: {cur.Name}");
+                        Console.WriteLine($"  Dinheiro: {cur.Money}");
+                        Console.WriteLine($"  Posição: {cur.Position} ({spaceName})");
+                        Console.WriteLine($"  Preso: {cur.EstaPreso}");
+                        Console.WriteLine($"  Lancou dados este turno: {cur.LancouDadosEsteTurno}");
+                        int pending = controller.GetPendingRent();
+                        if (pending > 0)
+                        {
+                            var owner = controller.GetRentOwner();
+                            string ownerName = owner != null ? owner.Name : "desconhecido";
+                            Console.WriteLine($"  Aluguer pendente: {pending} (a pagar a {ownerName})");
+                        }
+                        if (controller.IsCardMandatory())
+                        {
+                            Console.WriteLine("  Tem de tirar carta (TC).");
+                        }
+                    }
                 }
             }
             else if (operation == "PA")

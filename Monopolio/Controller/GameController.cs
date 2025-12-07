@@ -350,6 +350,13 @@ public class GameController
     public IReadOnlyList<Player> GetPlayers() => players.AsReadOnly();
     public Board GetBoard() => board;
 
+    // Estado para a View
+    public bool IsGameStarted() => jogoIniciado;
+    public Player? GetCurrentPlayer() => JogadorAtual;
+    public int GetPendingRent() => aluguerPendente;
+    public Player? GetRentOwner() => donoAluguerPendente;
+    public bool IsCardMandatory() => cartaObrigatoria;
+
     // ===== Helpers =====
     private void ReiniciarEstadoTurno()
     {
