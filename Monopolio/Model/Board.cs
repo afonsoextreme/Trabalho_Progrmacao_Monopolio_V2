@@ -6,6 +6,24 @@ public class Board
 {
     public List<Space> Spaces { get; private set; } = new List<Space>();
 
+    private Dictionary<string, int> PrecosEspacos = new Dictionary<string, int>()
+    {
+        {"Brown1", 100}, {"Brown2", 120},
+        {"Teal1", 90}, {"Teal2", 130},
+        {"Orange1", 120}, {"Orange2", 120}, {"Orange3", 140},
+        {"Black1", 110}, {"Black2", 120}, {"Black3", 130},
+        {"Red1", 130}, {"Red2", 130}, {"Red3", 160},
+        {"Green1", 120}, {"Green2", 140}, {"Green3", 160},
+        {"Blue1", 140}, {"Blue2", 140}, {"Blue3", 170},
+        {"Pink1", 160}, {"Pink2", 180},
+        {"White1", 160}, {"White2", 180}, {"White3", 190},
+        {"Yellow1", 140}, {"Yellow2", 140}, {"Yellow3", 170},
+        {"Violet1", 150}, {"Violet2", 130},
+        {"Train1", 150}, {"Train2", 150}, {"Train3", 150}, {"Train4", 150},
+        {"Electric Company", 120}, {"Water Works", 120},
+        {"Lux Tax", 80}
+    };
+
     public Board()
     {
         string[]names = {
