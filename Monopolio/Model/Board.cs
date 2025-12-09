@@ -5,22 +5,21 @@ public class Board
 {
     public List<Space> Spaces { get; private set; } = new List<Space>();
 
-    private Dictionary<string, int> PrecosEspacos = new Dictionary<string, int>()
+    private Dictionary<string, (int Preco, string Cor)> EspacosInfo = new Dictionary<string, (int Preco, string Cor)>()
     {
-        {"Brown1", 100}, {"Brown2", 120},
-        {"Teal1", 90}, {"Teal2", 130},
-        {"Orange1", 120}, {"Orange2", 120}, {"Orange3", 140},
-        {"Black1", 110}, {"Black2", 120}, {"Black3", 130},
-        {"Red1", 130}, {"Red2", 130}, {"Red3", 160},
-        {"Green1", 120}, {"Green2", 140}, {"Green3", 160},
-        {"Blue1", 140}, {"Blue2", 140}, {"Blue3", 170},
-        {"Pink1", 160}, {"Pink2", 180},
-        {"White1", 160}, {"White2", 180}, {"White3", 190},
-        {"Yellow1", 140}, {"Yellow2", 140}, {"Yellow3", 170},
-        {"Violet1", 150}, {"Violet2", 130},
-        {"Train1", 150}, {"Train2", 150}, {"Train3", 150}, {"Train4", 150},
-        {"Electric Company", 120}, {"Water Works", 120},
-        {"Lux Tax", 80}
+        {"Brown1", (100, "Brown")}, {"Brown2", (120, "Brown")},
+        {"Teal1", (90, "Teal")}, {"Teal2", (130, "Teal")},
+        {"Orange1", (120, "Orange")}, {"Orange2", (120, "Orange")}, {"Orange3", (140, "Orange")},
+        {"Black1", (110, "Black")}, {"Black2", (120, "Black")}, {"Black3", (130, "Black")},
+        {"Red1", (130, "Red")}, {"Red2", (130, "Red")}, {"Red3", (160, "Red")},
+        {"Green1", (120, "Green")}, {"Green2", (140, "Green")}, {"Green3", (160, "Green")},
+        {"Blue1", (140, "Blue")}, {"Blue2", (140, "Blue")}, {"Blue3", (170, "Blue")},
+        {"Pink1", (160, "Pink")}, {"Pink2", (180, "Pink")},
+        {"White1", (160, "White")}, {"White2", (180, "White")}, {"White3", (190, "White")},
+        {"Yellow1", (140, "Yellow")}, {"Yellow2", (140, "Yellow")}, {"Yellow3", (170, "Yellow")},
+        {"Violet1", (150, "Violet")}, {"Violet2", (130, "Violet")},
+        {"Train1", (150, "Train")}, {"Train2", (150, "Train")}, {"Train3", (150, "Train")}, {"Train4", (150, "Train")},
+        {"Electric Company", (120, "Utility")}, {"Water Works", (120, "Utility")}
     };
 
     public Board()
@@ -40,12 +39,20 @@ public class Board
         {
             var space = new Space(name);
 
-            if (PrecosEspacos.ContainsKey(name))
+            if (EspacosInfo.TryGetValue(name, out var info))
             {
-                space.Preco = PrecosEspacos[name];
-                space.PodeSerComprado = name != "Lux Tax";
+                space.Preco = info.Preco;
+                space.Color = info.Cor;
+                space.PodeSerComprado = true;
             }
             else
+            {
+                space.PodeSerComprado = false;
+                space.Color = string.Empty;
+            }
+
+            // Lux Tax nunca é comprável
+            if (name == "Lux Tax")
             {
                 space.PodeSerComprado = false;
             }

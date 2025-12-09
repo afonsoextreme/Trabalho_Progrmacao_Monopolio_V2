@@ -7,12 +7,12 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome>, IJ, LD <nome> <x> <y>, CE <nome>, LJ, SB, Q");
+        Console.WriteLine("Comandos: RJ <nome>, IJ, LD, PA, TC, TT, CE, CC <num>, LJ, DJ, S");
 
         while (true)
         {
             Console.Write("> ");
-            string line = Console.ReadLine();
+            string? line = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(line)) continue;
 
             string[] tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -25,6 +25,7 @@ public static class MainView
                     : string.Empty;
 
                 controller.registarJogador(name);
+                Console.WriteLine("Comandos: RJ <nome>, IJ, LD, PA, TC, TT, CE, CC <num>, LJ, DJ, S");
             }
             else if (operation == "IJ")
             {
@@ -32,30 +33,50 @@ public static class MainView
             }
             else if (operation == "LD")
             {
-                if (tokens.Length < 4)
+                if (tokens.Length == 1)
                 {
-                    Console.WriteLine("Uso correto: LD Nome X Y");
+                    controller.LancarDados();
                 }
                 else
                 {
-                    string nome = tokens[1];
-                    int x = int.Parse(tokens[2]);
-                    int y = int.Parse(tokens[3]);
-
-                    controller.LancarDados(nome, x, y);
+                    string nome = string.Join(' ', tokens.Skip(1));
+                    controller.LancarDados(nome);
                 }
             }
             else if (operation == "CE")
             {
-                if (tokens.Length < 2)
+                if (tokens.Length == 1)
                 {
-                    Console.WriteLine("Uso correto: CE Nome");
+                    controller.ComprarEspaco();
                 }
                 else
                 {
                     string nome = string.Join(' ', tokens.Skip(1));
                     controller.ComprarEspaco(nome);
                 }
+            }
+            else if (operation == "PA")
+            {
+                controller.PagarAluguer();
+            }
+            else if (operation == "CC")
+            {
+                if (tokens.Length < 2 || !int.TryParse(tokens[1], out int nCasas))
+                {
+                    Console.WriteLine("Uso correto: CC <numero de casas>");
+                }
+                else
+                {
+                    controller.ComprarCasa(nCasas);
+                }
+            }
+            else if (operation == "TC")
+            {
+                controller.TirarCarta();
+            }
+            else if (operation == "TT")
+            {
+                controller.TerminarTurno();
             }
             else if (operation == "LJ")
             {
@@ -75,7 +96,7 @@ public static class MainView
                     }
                 }
             }
-            else if (operation == "SB" || operation == "BOARD")
+            else if (operation == "DJ" || operation == "BOARD")
             {
                 controller.GetBoard().PrintBoard();
             }
