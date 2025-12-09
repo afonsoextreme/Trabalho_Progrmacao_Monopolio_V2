@@ -51,12 +51,31 @@ public class GameController
     }
 
     // ===== INICIAR JOGO (IJ) =====
-    public void IniciarJogo()
+    public void IniciarJogo(List<string> nomesJogadores)
     {
-        if (players.Count < 2)
+        if (nomesJogadores == null || nomesJogadores.Count == 0)
         {
-            Console.WriteLine("Jogadores insuficientes para iniciar o jogo.");
+            Console.WriteLine("Uso correto: IJ <nome1> <nome2> [<nome3>] [<nome4>] [<nome5>]");
             return;
+        }
+
+        if (nomesJogadores.Count < 2 || nomesJogadores.Count > 5)
+        {
+            Console.WriteLine("Deve fornecer entre 2 e 5 jogadores.");
+            return;
+        }
+
+        // Validar se todos os jogadores existem
+        var jogadoresEncontrados = new List<Player>();
+        foreach (var nome in nomesJogadores)
+        {
+            var jogador = players.FirstOrDefault(p => p.Name == nome);
+            if (jogador == null)
+            {
+                Console.WriteLine($"Jogador '{nome}' não encontrado.");
+                return;
+            }
+            jogadoresEncontrados.Add(jogador);
         }
 
         if (jogoIniciado)
@@ -69,7 +88,7 @@ public class GameController
         indiceJogadorAtual = 0;
         ReiniciarEstadoTurno();
         if (JogadorAtual != null)
-            Console.WriteLine($"Jogo iniciado. Turno de {JogadorAtual.Name}.");
+            Console.WriteLine($"Jogo iniciado com {nomesJogadores.Count} jogadores. Turno de {JogadorAtual.Name}.");
     }
 
     // ===== LANÇAR DADOS (LD) =====
@@ -344,6 +363,80 @@ public class GameController
         if (!jogador.LancouDadosEsteTurno)
         {
             Console.WriteLine("É preciso lançar os dados antes de comprar casas.");
+            return;
+        }
+
+        var espacosMesmaCor = board.Spaces.Where(s => s.Color == espaco.Color && s.PodeSerComprado);
+        if (!espacosMesmaCor.Any() || !espacosMesmaCor.All(s => s.Dono == jogador))
+        {
+            Console.WriteLine("Para comprar casas, o jogador precisa ser dono de todos os espaços desta cor.");
+            return;
+        }
+
+        if (espaco.Casas >= espaco.MaxCasas)
+        {
+            Console.WriteLine("Limite de casas atingido neste espaço.");
+            return;
+        }
+
+        int casasPossiveis = Math.Min(numeroCasas, espaco.MaxCasas - espaco.Casas);
+        int custoPorCasa = (int)Math.Round(espaco.Preco * 0.6, MidpointRounding.AwayFromZero);
+        int custoTotal = casasPossiveis * custoPorCasa;
+
+        if (jogador.Money < custoTotal)
+        {
+            Console.WriteLine("Saldo insuficiente para comprar as casas.");
+            return;
+        }
+
+        jogador.Money -= custoTotal;
+        espaco.Casas += casasPossiveis;
+        Console.WriteLine($"Compradas {casasPossiveis} casa(s) em {espaco.Name}. Total de casas: {espaco.Casas}.");
+    }
+
+    public void ComprarCasa(string nomeJogador, string nomeEspaco, int numeroCasas = 1)
+    {
+        if (!jogoIniciado)
+        {
+            Console.WriteLine("Não existe um jogo em curso.");
+            return;
+        }
+
+        var jogador = players.FirstOrDefault(p => p.Name == nomeJogador);
+        if (jogador == null)
+        {
+            Console.WriteLine("Jogador não encontrado.");
+            return;
+        }
+
+        var espaco = board.Spaces.FirstOrDefault(s => s.Name == nomeEspaco);
+        if (espaco == null)
+        {
+            Console.WriteLine("Espaço não encontrado.");
+            return;
+        }
+
+        if (numeroCasas <= 0)
+        {
+            Console.WriteLine("Número de casas inválido.");
+            return;
+        }
+
+        if (!espaco.PodeSerComprado)
+        {
+            Console.WriteLine("Este espaço não permite construção de casas.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(espaco.Color))
+        {
+            Console.WriteLine("Não é possível construir casas neste tipo de espaço.");
+            return;
+        }
+
+        if (espaco.Dono != jogador)
+        {
+            Console.WriteLine("Só o dono do espaço pode comprar casas aqui.");
             return;
         }
 

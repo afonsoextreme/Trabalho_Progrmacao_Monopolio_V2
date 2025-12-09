@@ -7,7 +7,7 @@ public static class MainView
     {
         GameController controller = new GameController();
 
-        Console.WriteLine("Comandos: RJ <nome>, IJ, LD, PA, TC, TT, CE, CC <num>, LJ, DJ, S");
+        Console.WriteLine("Comandos: RJ <nome>, IJ <nome1> <nome2> [<nome3>] [<nome4>] [<nome5>], LD, PA, TC, TT, CE, CC <NomeJogador> <NomeEspaço> <numeroCasas>, LJ, DJ, S");
 
         while (true)
         {
@@ -25,11 +25,19 @@ public static class MainView
                     : string.Empty;
 
                 controller.registarJogador(name);
-                Console.WriteLine("Comandos: RJ <nome>, IJ, LD, PA, TC, TT, CE, CC <num>, LJ, DJ, S");
+                Console.WriteLine("Comandos: RJ <nome>, IJ <nome1> <nome2> [<nome3>] [<nome4>] [<nome5>], LD, PA, TC, TT, CE, CC <NomeJogador> <NomeEspaço> <numeroCasas>, LJ, DJ, S");
             }
             else if (operation == "IJ")
             {
-                controller.IniciarJogo();
+                if (tokens.Length < 3)
+                {
+                    Console.WriteLine("Uso correto: IJ <nome1> <nome2> [<nome3>] [<nome4>] [<nome5>]");
+                }
+                else
+                {
+                    var nomesJogadores = tokens.Skip(1).ToList();
+                    controller.IniciarJogo(nomesJogadores);
+                }
             }
             else if (operation == "LD")
             {
@@ -61,13 +69,15 @@ public static class MainView
             }
             else if (operation == "CC")
             {
-                if (tokens.Length < 2 || !int.TryParse(tokens[1], out int nCasas))
+                if (tokens.Length < 4 || !int.TryParse(tokens[3], out int nCasas))
                 {
-                    Console.WriteLine("Uso correto: CC <numero de casas>");
+                    Console.WriteLine("Uso correto: CC <NomeJogador> <NomeEspaço> <numeroCasas>");
                 }
                 else
                 {
-                    controller.ComprarCasa(nCasas);
+                    string nomeJogador = tokens[1];
+                    string nomeEspaco = tokens[2];
+                    controller.ComprarCasa(nomeJogador, nomeEspaco, nCasas);
                 }
             }
             else if (operation == "TC")
@@ -87,12 +97,10 @@ public static class MainView
                 }
                 else
                 {
-                    int i = 1;
+                    Console.WriteLine("NomeJogador NumJogos NumVitórias NumEmpates NumDerrotas");
                     foreach (var p in players)
                     {
-                        string state = p.IsBankrupt ? "Falido" : "Ativo";
-                        Console.WriteLine($"[{state}] Jogador {i}: {p.Name} - Dinheiro: {p.Money}");
-                        i++;
+                        Console.WriteLine($"{p.Name} {p.NumJogos} {p.NumVitórias} {p.NumEmpates} {p.NumDerrotas}");
                     }
                 }
             }

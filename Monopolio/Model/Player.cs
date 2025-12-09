@@ -7,6 +7,10 @@ public class Player
     public bool LancouDadosEsteTurno { get; set; }
     public bool EstaPreso { get; set; }
     public int TurnosNaPrisao { get; set; }
+    public int NumJogos { get; set; }
+    public int NumVitórias { get; set; }
+    public int NumEmpates { get; set; }
+    public int NumDerrotas { get; set; }
 
     public Player(string name)
     {
@@ -17,6 +21,10 @@ public class Player
         LancouDadosEsteTurno = false;
         EstaPreso = false;
         TurnosNaPrisao = 0;
+        NumJogos = 0;
+        NumVitórias = 0;
+        NumEmpates = 0;
+        NumDerrotas = 0;
     }
 
     public void Move(int novaPosicao)
