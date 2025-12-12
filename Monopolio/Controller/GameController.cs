@@ -174,6 +174,77 @@ public class GameController
         }
     }
 
+    public void LancarDadosStatic(string nomeJogador, int x, int y)
+    {
+        if (x < 1 || x > 6 || y < 1 || y > 6)
+        {
+            Console.WriteLine("Erro: Os dados devem estar entre 1 e 6.");
+            return;
+        }
+
+        if (!jogoIniciado)
+        {
+            Console.WriteLine("Não existe um jogo em curso.");
+            return;
+        }
+
+        var jogador = players.FirstOrDefault(p => p.Name == nomeJogador);
+        if (jogador == null)
+        {
+            Console.WriteLine("Jogador não participa no jogo em curso.");
+            return;
+        }
+
+        if (players[indiceJogadorAtual] != jogador)
+        {
+            Console.WriteLine("Não é o turno do jogador.");
+            return;
+        }
+
+        if (jogador.LancouDadosEsteTurno)
+        {
+            Console.WriteLine("O jogador já lançou os dados neste turno.");
+            return;
+        }
+
+        if (jogador.EstaPreso)
+        {
+            Console.WriteLine("O jogador está preso.");
+            return;
+        }
+
+        int pos = jogador.Position;
+        int roll1 = x;
+        int roll2 = y;
+        int steps = roll1 + roll2;
+        int novaPosicao = (pos + steps) % board.Spaces.Count;
+
+        jogador.Position = novaPosicao;
+        jogador.LancouDadosEsteTurno = true;
+
+        Space espacoAtual = board.Spaces[novaPosicao];
+        Console.WriteLine($"{jogador.Name} lançou {roll1} e {roll2} e moveu-se para {espacoAtual.Name}");
+
+        if (espacoAtual.Dono != null && espacoAtual.Dono != jogador)
+        {
+            aluguerPendente = CalcularAluguer(espacoAtual);
+            donoAluguerPendente = espacoAtual.Dono;
+            Console.WriteLine($"O espaço pertence a {donoAluguerPendente.Name}. Deve pagar aluguer de {aluguerPendente}.");
+        }
+        else
+        {
+            aluguerPendente = 0;
+            donoAluguerPendente = null;
+        }
+
+        cartaObrigatoria = espacoAtual.Name.Equals("Chance", StringComparison.OrdinalIgnoreCase)
+                           || espacoAtual.Name.Equals("Community", StringComparison.OrdinalIgnoreCase);
+        if (cartaObrigatoria)
+        {
+            Console.WriteLine("Jogador tem de tirar uma carta (TC).");
+        }
+    }
+
     public void LancarDados(string nomeJogador, int x, int y)
     {
         if (!jogoIniciado)
@@ -571,6 +642,47 @@ public class GameController
 
     public IReadOnlyList<Player> GetPlayers() => players.AsReadOnly();
     public Board GetBoard() => board;
+
+    // ===== DISPLAY GAME BOARD (DJ) =====
+    public void DisplayGameBoard()
+    {
+        if (!jogoIniciado)
+        {
+            Console.WriteLine("Nenhum jogo em curso.");
+            return;
+        }
+
+        Console.WriteLine($"\nJogo com {players.Count} jogadores. Turno: {JogadorAtual?.Name}");
+        
+        Console.WriteLine("\nPosições:");
+        foreach (var p in players)
+        {
+            Console.WriteLine($"{p.Name}: {board.Spaces[p.Position].Name}");
+        }
+
+        Console.WriteLine("\nPropriedades:");
+        var propriedadesCompradas = board.Spaces.Where(s => s.Dono != null).ToList();
+        
+        if (propriedadesCompradas.Count == 0)
+        {
+            Console.WriteLine("Nenhuma propriedade comprada");
+        }
+        else
+        {
+            foreach (var espaco in propriedadesCompradas)
+            {
+                if (espaco.Casas > 0)
+                {
+                    Console.WriteLine($"{espaco.Name} ({espaco.Dono?.Name}) - {espaco.Casas} casa(s)");
+                }
+                else
+                {
+                    Console.WriteLine($"{espaco.Name} ({espaco.Dono?.Name})");
+                }
+            }
+        }
+        Console.WriteLine();
+    }
 
     // Estado para a View
     public bool IsGameStarted() => jogoIniciado;

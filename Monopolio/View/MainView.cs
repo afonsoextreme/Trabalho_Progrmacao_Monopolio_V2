@@ -45,10 +45,17 @@ public static class MainView
                 {
                     controller.LancarDados();
                 }
-                else
+                else if (tokens.Length == 2)
                 {
                     string nome = string.Join(' ', tokens.Skip(1));
                     controller.LancarDados(nome);
+                }
+                else
+                {
+                    string nome = string.Join(' ', tokens.Skip(1));
+                    controller.LancarDadosStatic(tokens[1],int.Parse(tokens[2]),int.Parse(tokens[3]));
+
+
                 }
             }
             else if (operation == "CE")
@@ -62,6 +69,7 @@ public static class MainView
                     string nome = string.Join(' ', tokens.Skip(1));
                     controller.ComprarEspaco(nome);
                 }
+
             }
             else if (operation == "PA")
             {
@@ -106,7 +114,7 @@ public static class MainView
             }
             else if (operation == "DJ" || operation == "BOARD")
             {
-                controller.GetBoard().PrintBoard();
+                controller.DisplayGameBoard();
             }
             else if (operation == "Q" || operation == "QUIT")
             {
